@@ -1,38 +1,54 @@
-import mongoose, { mongo } from "mongoose";
-import user from "../Models/user.js";
+import mongoose from "mongoose";
+import User from "../Models/user.js";
 import dbConnect from "../Config/db.js";
-class UserRegistration {
 
+class UserRegistration {
   constructor() {
   }
 
   async connect(mongo_url) {
-    dbConnect(mongo_url)
-  }
-  
-  async saveUser(body){
-    try{
-        const {name,email}=body
-        const newUser=new user({name,email})
-        await newUser.save();
-        console.log("user saved successfully.......")
-        return newUser
-    }
-    catch(err){
-        console.log("failed to save user............")
-    }
+    await dbConnect(mongo_url);
   }
 
-  async getUsers(){
+  async saveUser(body) {
     try {
-        const users=await user.find()
-        return users
-    } catch (error) {
-        console.log("failed to collect data from db.....")
-    }
+      const { name, email } = body;
 
+      const existingUser = await User.findOne({ email });
+      if (existingUser) {
+        return { status: false, user: "User Already Exists." };
+      }
+
+      const newUser = new User({ name, email });
+      await newUser.save();
+
+      return { status: true, user: newUser };
+    } catch (err) {
+      console.error("Failed to save user:", err);
+      throw new Error("Database error while saving user.");
+    }
+  }
+
+  async getUsers() {
+    try {
+      const users = await User.find();
+      return users;
+    } catch (error) {
+      console.error("Failed to retrieve users:", error);
+      throw new Error("Database error while retrieving users.");
+    }
+  }
+
+  async getUserById(prompt){
+    try{
+      const user=User.findOne({_id:prompt})
+      return user;
+    }
+    catch(error){
+      console.error("Failed to retrieve user",err)
+      throw new Error("Database error while retrieving user.")
+    }
   }
 }
-
 
 export default UserRegistration;

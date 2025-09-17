@@ -14,7 +14,10 @@ const register=new userRegistration()
 register.connect(mongo_url)
 
 app.use("/user/register",router)
+app.get("/",(req,res)=>{
+  res.send("Testing...")
+})
 
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:PORT`);
+  console.log(`Server is running on http://localhost:${PORT}`);
 });
