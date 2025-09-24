@@ -1,5 +1,8 @@
 import UserRegistration from "../Services/userRegistration.js";
+import User from "../Models/user.js";
+import sendMail from "../Services/EmailServices.js";
 
+// Save new user
 export const saveNewUser = async (req, res) => {
   try {
     const { name, email } = req.body;
@@ -22,7 +25,6 @@ export const saveNewUser = async (req, res) => {
         user: "already exists",
       });
     }
-
   } catch (error) {
     return res.status(500).json({ error: "Failed to register new user." });
   }
@@ -40,20 +42,45 @@ export const getRegisteredUsers = async (req, res) => {
   }
 };
 
-export const getRegisteredUserById=async(req,res)=>{
+// Get user by ID
+export const getRegisteredUserById = async (req, res) => {
   try {
-    const registered=new UserRegistration()
-    const user=await registered.getUserById(req.params.id)
-    if(user){
-      return res.status(200).json({message:"Stored user",user})
-    }
-    else{
-      return res.status(404).json({message:"User doesnt exist",user:"None"})
+    const register = new UserRegistration();
+    const user = await register.getUserById(req.params.id);
+
+    if (user) {
+      return res.status(200).json({ message: "Stored user", user });
+    } else {
+      return res.status(404).json({ message: "User doesn't exist", user: "None" });
     }
   } catch (error) {
-    console.error("Error Fetching user",error)
-    return res.status(500).json({error:"Failed to retrieve user"})
+    console.error("Error Fetching user", error);
+    return res.status(500).json({ error: "Failed to retrieve user" });
   }
-}
+};
 
-
+// Update user by ID and provide the user information to update...
+export const updateUserById = async (req, res) => {
+  try {
+    const register = new UserRegistration();
+    const updatedUser = await register.updateUserById(req.params.id, req.body);
+    if (updatedUser) {
+      const updatedUserInfo=await User.findById({_id:req.params.id})
+      console.log(process.env.EMAIL_USER)
+      sendMail(updatedUserInfo);
+      return res.status(200).json({
+        message: "User Info Updated Successfully",
+        updatedUserInfo,
+      }
+    );
+    } else {
+      return res.status(404).json({
+        message: "User Not Found",
+        user: "None",
+      });
+    }
+  } catch (error) {
+    console.error("Error Updating user info", error);
+    return res.status(500).json({ error: "Failed to update user" });
+  }
+};

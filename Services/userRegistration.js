@@ -49,6 +49,19 @@ class UserRegistration {
       throw new Error("Database error while retrieving user.")
     }
   }
+
+  async updateUserById(id,userData){
+    try {
+      const {name,email}=userData
+       const updatedUser=await User.findByIdAndUpdate(id,{name:userData.name,email:userData.email})
+       console.log(updatedUser)
+       return updatedUser;
+
+    } catch (error) {
+      console.error("Failed to Update User Info",error)
+      throw new Error("Database error while updating user info")
+    }
+  }
 }
 
 export default UserRegistration;
